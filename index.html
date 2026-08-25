@@ -78,8 +78,8 @@
 
   .screen{
     position:fixed; inset:0;
-    display:none; flex-direction:column; align-items:center; justify-content:center;
-    padding:6vh 6vw; text-align:center; overflow-y:auto;
+    display:none; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:7vh 6vw 8vh; text-align:center; overflow-y:auto;
   }
   .screen.active{ display:flex; animation:fadeIn .6s ease forwards; }
   @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
@@ -289,8 +289,71 @@
     40%,60%{ transform:translate(3px,-2px); }
   }
 
+  /* ---------- BOTÓN ATRÁS ---------- */
+  .back-btn{
+    position:fixed; left:16px; bottom:16px; z-index:20;
+    background:var(--paper); color:var(--navy-2);
+    border:3px solid var(--navy-2);
+    padding:.6rem 1.15rem; font-family:'Anton', sans-serif; font-size:.85rem; letter-spacing:.03em;
+    text-transform:uppercase;
+    transform:rotate(1deg);
+    box-shadow:4px 4px 0 var(--navy-2);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .back-btn:hover{ transform:rotate(0deg) translate(-2px,-2px); box-shadow:6px 6px 0 var(--navy-2); }
+  .back-btn:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--navy-2); }
+
+  /* ---------- AMBIENTE PREGUNTA ---------- */
+  #screen-question{ overflow:hidden; }
+  #screen-question::before{
+    content:"";
+    position:absolute; left:50%; top:34%; width:82vw; height:82vw; max-width:520px; max-height:520px;
+    transform:translate(-50%,-50%);
+    border:2px solid var(--teal); border-radius:50%; opacity:.15; pointer-events:none; z-index:0;
+  }
+  #screen-question::after{
+    content:"";
+    position:absolute; left:50%; top:34%; width:2px; height:82vw; max-height:520px;
+    transform:translate(-50%,-50%);
+    background:var(--teal); opacity:.1; pointer-events:none; z-index:0;
+  }
+  #screen-question > *{ position:relative; z-index:1; }
+  #screen-question .corner-star{
+    position:absolute; width:30px; height:30px; border-radius:50%;
+    background:var(--gold); opacity:.22; z-index:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.9rem; color:var(--navy-2);
+  }
+  #screen-question .corner-star.tl{ top:6vh; left:8vw; transform:rotate(-8deg); }
+  #screen-question .corner-star.tr{ top:9vh; right:9vw; transform:rotate(10deg); }
+  #question-buttons-zone{ position:relative; z-index:1; }
+  #question-buttons-zone::before{
+    content:"";
+    position:absolute; inset:-34px; z-index:-1; border-radius:50%;
+    background:radial-gradient(circle, rgba(217,167,59,.22), transparent 72%);
+  }
+
+  /* ---------- SELLO FINAL ---------- */
+  .final-seal{
+    width:148px; height:148px; border-radius:50%;
+    border:4px double var(--red);
+    display:flex; align-items:center; justify-content:center;
+    margin:1.6rem auto 0;
+    transform:scale(3) rotate(-14deg); opacity:0;
+    background:rgba(181,68,46,.05);
+    animation:stampSlam .5s cubic-bezier(.2,.85,.25,1) forwards;
+    animation-delay:1.6s;
+  }
+  .final-seal-inner{ display:flex; flex-direction:column; align-items:center; gap:.3rem; padding:0 .8rem; }
+  .final-seal-names{
+    font-family:'Anton', sans-serif; font-size:.92rem; color:var(--red);
+    letter-spacing:.03em; line-height:1.15;
+  }
+  .final-seal-date{ font-family:'Poppins', sans-serif; font-size:.62rem; color:var(--red); letter-spacing:.03em; }
+
   @media (max-width:520px){
     .cromo-card{ max-width:78vw; }
+    #screen-question::before{ top:32%; }
   }
 </style>
 </head>
@@ -303,7 +366,7 @@
   <h1>Blanca</h1>
   <p class="subtitle">Hay algo que llevo tiempo queriendo decirte, que creo que también lo estabas deseando, pero había que esperar el momento perfecto…</p>
   <p class="subtitle">Por eso he decidido hacer este álbum de cromos.</p>
-  <button class="stamp-btn" onclick="goTo('screen-cromos')">Abrir álbum →</button>
+  <button class="stamp-btn" onclick="enterCromos()">Abrir álbum →</button>
 </section>
 
 <!-- ================= CROMOS ================= -->
@@ -321,7 +384,9 @@
 </section>
 
 <!-- ================= PREGUNTA ================= -->
-<section id="screen-question" class="screen">
+<section id="screen-question" class="screen field-bg">
+  <span class="corner-star tl">★</span>
+  <span class="corner-star tr">★</span>
   <p class="eyebrow">Colección casi completa</p>
   <h2>¿Quieres salir conmigo?</h2>
   <p class="sub">(el cromo más buscado de todos, sin cambio posible)</p>
@@ -337,7 +402,7 @@
   <div class="cromo-card final reveal-final" style="--tilt:-2deg">
     <div class="cromo-frame gold">
       <div class="cromo-photo has-photo">
-        <img src="fotos/cromo-especial.jpg" alt="Nosotros, algún día">
+        <img src="fotos/cromo-especial.jpg" alt="Nosotros, algún día" onerror="this.remove()">
       </div>
       <div class="cromo-star">★</div>
     </div>
@@ -345,7 +410,15 @@
   <p class="cromo-caption-final">el último cromo que nos falta... algún día</p>
   <p>Te quiero. Espero que te haya gustado la sorpresa :)</p>
   <p class="fecha" id="fecha-final"></p>
+  <div class="final-seal">
+    <div class="final-seal-inner">
+      <span class="final-seal-names">Blanca &amp; Marco</span>
+      <span class="final-seal-date" id="seal-date"></span>
+    </div>
+  </div>
 </section>
+
+<button id="btn-back" class="back-btn" style="display:none;">← Atrás</button>
 
 <div id="stamp-overlay"><div class="stamp-mark">SIUUUUU</div></div>
 
@@ -362,16 +435,43 @@
   ];
 
   let cromoIndex = 0;
-  let transitionTimer = null;
+  const btnBack = document.getElementById('btn-back');
 
-  function continuarSobre(){
-    if(transitionTimer) clearTimeout(transitionTimer);
-    goTo('screen-question');
+  function setBack(action){
+    if(!action){ btnBack.style.display = 'none'; btnBack.onclick = null; return; }
+    btnBack.style.display = 'inline-block';
+    btnBack.onclick = action;
   }
 
   function goTo(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    document.getElementById(id).scrollTop = 0;
+  }
+
+  function enterCromos(){
+    goTo('screen-cromos');
+    showCromo(0);
+  }
+
+  function showCromo(idx){
+    const slides = document.querySelectorAll('.cromo-slide');
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    cromoIndex = idx;
+    document.getElementById('screen-cromos').scrollTop = 0;
+    if(idx === 0){
+      setBack(()=>{ goTo('screen-intro'); setBack(null); });
+    } else {
+      setBack(()=> showCromo(idx-1));
+    }
+  }
+
+  function continuarSobre(){
+    goTo('screen-question');
+    setBack(()=>{
+      goTo('screen-transition');
+      setBack(()=>{ goTo('screen-cromos'); showCromo(CROMOS.length - 1); });
+    });
   }
 
   function buildCromos(){
@@ -404,14 +504,12 @@
 
   function nextCromo(){
     const slides = document.querySelectorAll('.cromo-slide');
-    slides[cromoIndex].classList.remove('active');
-    cromoIndex++;
-    if(cromoIndex >= slides.length){
+    if(cromoIndex + 1 >= slides.length){
       goTo('screen-transition');
-      transitionTimer = setTimeout(()=> goTo('screen-question'), 8000);
+      setBack(()=>{ goTo('screen-cromos'); showCromo(slides.length - 1); });
       return;
     }
-    slides[cromoIndex].classList.add('active');
+    showCromo(cromoIndex + 1);
   }
 
   /* ---------- botón "No" esquivo ---------- */
@@ -440,8 +538,12 @@
   /* ---------- decir que sí ---------- */
   function sayYes(){
     sellarAprobado();
+    const hoy = new Date();
     document.getElementById('fecha-final').textContent =
-      "Sellado el " + new Date().toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+      "Sellado el " + hoy.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('seal-date').textContent =
+      hoy.toLocaleDateString('es-ES', {day:'numeric', month:'short', year:'numeric'});
+    setBack(null);
     setTimeout(()=> goTo('screen-final'), 1300);
   }
 
